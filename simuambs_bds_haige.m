@@ -37,5 +37,5 @@ for i=1:4
     %                     end    %             end
 end
 % end
-cnt
+% cnt
  save('./Haigesimudata/Haige_option.mat','opts');

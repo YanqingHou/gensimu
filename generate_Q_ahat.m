@@ -113,11 +113,13 @@ time = 1:lt;
 res = struct('Qa',[],'ahat',[],'Ps',[],'Qb',[],'Qab',[],'DOPs',[]);
 if freqno1==0
     for k=time
-    [Qa,Ps,Qb,Qab] = SingleQgg(freq2,sigcode,sigphase,sdion,tropo,no_epochs,cutoff,xs2(:,k),ys2(:,k),zs2(:,k),xyz,plh,cfix);  
+    [Qa,Ps,Qb,Qab,DOPs] = SingleQgg(freq2,sigcode,sigphase,sdion,tropo,no_epochs,cutoff,xs2(:,k),ys2(:,k),zs2(:,k),xyz,plh,cfix);  
     res(k).Qa = Qa; % float ambiguity variance matrix for BDS
     res(k).Qb = Qb;
     res(k).Qab = Qab;
-    res(k).Ps= Ps;      
+    res(k).Ps= Ps;   
+    res(k).DOPs=DOPs;
+
 %         if Nsamp > 0
 %             res(k).ahat  = mvnrnd(zeros(1,size(Qa,1)),Qa,Nsamp)'; 
 %         end
