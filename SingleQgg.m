@@ -1,11 +1,11 @@
-function [Qa1,Ps1,Qb1,Qab1] = SingleQgg(freq,...
+function [Qa1,Ps1,Qb1,Qab1,DOPs] = SingleQgg(freq,...
     sigcode,sigphase,sdion,tropo,no_epochs,cutoff,xs,ys,zs,xyz,plh,cfix)
 
 
 % freq  = [freq1;freq2];
 
 model         = 'baseline';         % baseline
-scenario      = 'rr';               % stationary
+scenario      = 'kin';               % rr-stationary
 rectype       = 'non-cc';           % non-crosscorrelating
 
 ncode         = length(freq);      % number of code observations 
@@ -50,6 +50,13 @@ if ~cfix
 else 
     LOS  = [];
 end
+A=[LOS,ones(no_sv,1)];
+Q=inv(A'*A);
+TDOP=sqrt(Q(4,4));
+PDOP=sqrt(Q(1,1)+Q(2,2)+Q(3,3));
+GDOP=sqrt(trace(Q));
+
+
 m  = no_sv - 1;
 
 
@@ -128,6 +135,9 @@ Qa1   =(tril(Qa1,0)+tril(Qa1,-1)');
 
 
 Ps1 = cpsucrate(Qa1,'LS');
+ADOP=det(Qa1);
+ADOP=ADOP^(1/m);
+DOPs=[TDOP,PDOP,GDOP,ADOP];
 
 % ---------------------
 % --- success-rates ---

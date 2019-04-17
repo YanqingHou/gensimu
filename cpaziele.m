@@ -1,4 +1,4 @@
-function [xsat,ysat,zsat,azim,elev,rotmat] = cpaziele (tsat,eph,station);
+function [xsat,ysat,zsat,azim,elev,rotmat] = cpaziele (curweek,tsat,eph,station,sys,mode)
 %CPAZIELE: Compute satellite positions and elevation/azimuth
 %
 % This routine computes satellite positions in an erath-fixed WGS'84
@@ -34,62 +34,62 @@ function [xsat,ysat,zsat,azim,elev,rotmat] = cpaziele (tsat,eph,station);
 % ---------------------------
 % --- Initialize matrices ---
 % ---------------------------
-
-xsat = zeros(size(eph,1),length(tsat));
-ysat = zeros(size(eph,1),length(tsat));
-zsat = zeros(size(eph,1),length(tsat));
-azim = zeros(size(eph,1),length(tsat));
-elev = zeros(size(eph,1),length(tsat));
-
+prns=unique(eph(:,1));
+satnum=length(prns);
+xsat = zeros(satnum,length(tsat));
+ysat = zeros(satnum,length(tsat));
+zsat = zeros(satnum,length(tsat));
+azim = zeros(satnum,length(tsat));
+elev = zeros(satnum,length(tsat));
 % -------------------------------------------------------
 % --- Compute satellite positions (XYZ WGS84 & AZ/EL) ---
 % -------------------------------------------------------
 
-for i = 1:size(eph,1);
+for i = 1:satnum%size(eph,1)
 
-  [tmp] = satposef (eph(i,1),tsat,eph);
+  [tmp] = satposef (prns(i),curweek,tsat,eph,sys,mode);
   xsat(i,:) = tmp(:,1)';
   ysat(i,:) = tmp(:,2)';
   zsat(i,:) = tmp(:,3)';
   
-end;
+end
 
 % -------------------------------------------------
 % --- Compute azimuths/elevations, if requested ---
 % -------------------------------------------------
-
-if nargin > 2;
-  
-  xsat = xsat - station(1);
-  ysat = ysat - station(2);
-  zsat = zsat - station(3);
-  
-  plh = xyz2plh (station,'WGS-84');
-
-  rotmat(1,1) = - sin(plh(1)) * cos(plh(2));
-  rotmat(1,2) = - sin(plh(1)) * sin(plh(2));
-  rotmat(1,3) =   cos(plh(1))              ;
-  rotmat(2,1) = -               sin(plh(2));
-  rotmat(2,2) =                 cos(plh(2));
-  rotmat(2,3) =   0d0;
-  rotmat(3,1) = - cos(plh(1)) * cos(plh(2));
-  rotmat(3,2) = - cos(plh(1)) * sin(plh(2));
-  rotmat(3,3) = - sin(plh(1))              ;
-
-  for i = 1:size(eph,1);
-    
-    neh  = rotmat * [xsat(i,:)' ysat(i,:)' zsat(i,:)']';
-    dist = sqrt(neh(1,:).*neh(1,:) + neh(2,:).*neh(2,:) + neh(3,:).*neh(3,:));
-    azim(i,:) = mod(rad2deg(atan2 (neh(2,:),neh(1,:))),360);
-    elev(i,:) = rad2deg(asin(-neh(3,:)./dist));
-    
-  end;
-
-  xsat = xsat + station(1);
-  ysat = ysat + station(2);
-  zsat = zsat + station(3);
-
-end;
+% 
+% if nargin > 2;
+%   
+%   xsat = xsat - station(1);
+%   ysat = ysat - station(2);
+%   zsat = zsat - station(3);
+%   
+%   plh = xyz2plh (station,'WGS-84');
+% 
+%   rotmat(1,1) = - sin(plh(1)) * cos(plh(2));
+%   rotmat(1,2) = - sin(plh(1)) * sin(plh(2));
+%   rotmat(1,3) =   cos(plh(1))              ;
+%   rotmat(2,1) = -               sin(plh(2));
+%   rotmat(2,2) =                 cos(plh(2));
+%   rotmat(2,3) =   0d0;
+%   rotmat(3,1) = - cos(plh(1)) * cos(plh(2));
+%   rotmat(3,2) = - cos(plh(1)) * sin(plh(2));
+%   rotmat(3,3) = - sin(plh(1))              ;
+% 
+%   for i = 1:size(eph,1);
+%     
+%     neh  = rotmat * [xsat(i,:)' ysat(i,:)' zsat(i,:)']';
+%     dist = sqrt(neh(1,:).*neh(1,:) + neh(2,:).*neh(2,:) + neh(3,:).*neh(3,:));
+%     azim(i,:) = mod(rad2deg(atan2 (neh(2,:),neh(1,:))),360);
+%     elev(i,:) = rad2deg(asin(-neh(3,:)./dist));
+%     
+%   end;
+% 
+%   xsat = xsat + station(1);
+%   ysat = ysat + station(2);
+%   zsat = zsat + station(3);
+% 
+% end;
 
 % --------------------------------
 % --- End of function cpaziele ---

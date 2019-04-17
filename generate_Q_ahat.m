@@ -60,20 +60,31 @@ cfix      = 0;                        % cfix=1: coordinates fixed (both receiver
 % ldeg  = 115.35;                       % longitude of receiver [degrees]
 % pdeg  = -33.3;                        % latitude of receiver [degrees]
 %20 days
-starttime  = '22-nov-2013 0:00';      % first epoch for which to generate data
-endtime    = '28-nov-2013 23:59';     % last epoch for which to generate data
+starttime  = '7-jan-2019 0:00:00';      % first epoch for which to generate data
+endtime    = '7-jan-2019 23:59:59';     % last epoch for which to generate data
 
-mixeph =      rd_alma('Almanac.alm');
-eph   =      mixeph(mixeph(:,1)<33,:);
-eph2   =     mixeph(mixeph(:,1)>260,:);
+% mixeph =      rd_alma('Almanac.alm');
+% eph   =      mixeph(mixeph(:,1)<33,:);
+% eph2   =     mixeph(mixeph(:,1)>260,:);
 
 
 % starttime  = '21-mar-2012 0:00';      % first epoch for which to generate data
 % endtime    = '31-mar-2012 24:00';     % last epoch for which to generate data
 % 
 % 
-% eph        = rdyuma('yumaGPS20120319.txt');  % GPS almanac (use almanac corresponding to the date considered)
-% eph2       = rdyuma('yumaGAL20120319.txt');  % Galileo almanac
+% brdm0070.19p
+% navfile='/Users/YanqingHou/Documents/Work/datacenter/brdm0070.19p';
+
+[outputEphemeris ]= readRinexNav('brdm0070.19p');
+eph_gps=outputEphemeris.gpsEphemeris';
+eph_bds=outputEphemeris.beidouEphemeris';
+
+alm_gps        = rdyuma('gps007.ALM',0,2);  % GPS almanac (use almanac corresponding to the date considered)
+alm_bds       = rdyuma('tarc0070.19alc',260,1);  % bds almanac
+[~,indx]=sort(alm_bds(:,1));
+alm_bds=alm_bds(indx,:);
+% eph        = rdyuma('yumaGPS20120319.txt',0,2);  % GPS almanac (use almanac corresponding to the date considered)
+% eph2       = rdyuma('yumaGAL20120319.txt',260,2);  % bds almanac
 int        = 1800;                     % interval [sec] for which model will be generated
 
 no_epochs     = 1;                    % number of epochs used in resolving float solution
@@ -86,10 +97,13 @@ lrad          = ldeg*pi/180;
 plh           = [prad lrad 0];  % vector [latitudes longitudes heights]
 xyz           = plh2xyzwgs(plh);
 
-tsat          = mktsat ( starttime,endtime,int);
+[curweek,tsat]= mktsat ( starttime,endtime,int);
 
-[xs,ys,zs]    = cpaziele (tsat,eph);
-[xs2,ys2,zs2] = cpaziele (tsat,eph2);
+% [xs,ys,zs]    = cpaziele (curweek,tsat,alm_gps,xyz,'GPS','alm');
+% [xs2,ys2,zs2] = cpaziele (curweek,tsat,alm_bds,xyz,'BDS','alm');
+
+[rsx,rsy,rsz]    = cpaziele (curweek,tsat,eph_gps,xyz,'GPS','eph');
+[rsx2,rsy2,rsz2] = cpaziele (curweek,tsat,eph_bds,xyz,'BDS','eph');
 
 % 
 lt = size(tsat,2);

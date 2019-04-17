@@ -1,4 +1,4 @@
-function [eph] = rdyuma (file,addid,ymaperiod);
+function [eph] = rdyuma (file,addid,ymaperiod)
 %RDYUMA: Read satellite ephemeris from a YUMA-file
 %
 % This routine reads satellite data from a YUMA almanac. It can be used for
@@ -20,7 +20,7 @@ function [eph] = rdyuma (file,addid,ymaperiod);
 %            for example to distinguish between GPS and GLONASS satellites
 %            (for GLONASS, set to "32"). If left out, nothing is added and
 %            the ID remains as it was read from the YUMA file.
-%   yumaperiod: period of 1024 weeks of the ymaalmanak. 
+%   yumaperiod: period of 1024 weeks of the ymaalmanak.
 %   period 1= 6jan 1980 - 21 aug 1999
 %   period 2= 22 aug 1999 - 7 apr 2019
 %   period 3= 8 apr 2019 - 21 nov 2038
@@ -37,10 +37,10 @@ function [eph] = rdyuma (file,addid,ymaperiod);
 % Eph(_, 1)  prn       Satellite prn number
 % Eph(_, 2)  toc       Time of clock (seconds into GPS week)
 % Eph(_, 3)  svbi      SV clock bias (seconds)
-% Eph(_, 4)  svdr      SV clock drift (sec/sec) 
+% Eph(_, 4)  svdr      SV clock drift (sec/sec)
 % Eph(_, 5)  svdrr     SV clock drift rate (sec/sec2)
 % Eph(_, 6)  aode      AODE (age of data ephemeris) (sec)
-% Eph(_, 7)  crs       C_rs (meters)  
+% Eph(_, 7)  crs       C_rs (meters)
 % Eph(_, 8)  deltan    delta mean motion (radians/sec)
 % Eph(_, 9)  m0        M_0 (radians)
 % Eph(_,10)  cuc       C_uc (radians)
@@ -78,17 +78,17 @@ function [eph] = rdyuma (file,addid,ymaperiod);
 % --- Declare global variables for the GPSWEEK / GPSECHO ---
 % ----------------------------------------------------------
 
-global GPSWEEK;
+% global GPSWEEK;
 global GPSECHO;
 
 % ------------------------------------
 % --- Value to add to satellite ID ---
 % ------------------------------------
 if ~exist('addid')
-   addid = 0;
+    addid = 0;
 end
 if isempty(addid)
-   addid = 0;
+    addid = 0;
 end
 
 if ~exist('ymaperiod')
@@ -101,10 +101,10 @@ end
 % ----------------------
 
 fid=fopen(file);
-if fid==-1;
-  disp(['Error opening YUMA ephemeris file: ' file]);
-  return;
-end;
+if fid==-1
+    disp(['Error opening YUMA ephemeris file: ' file]);
+    return;
+end
 
 % -------------------------------------
 % --- Read ephemeris and close file ---
@@ -112,66 +112,79 @@ end;
 
 count = 0;
 
-while feof(fid) == 0;
-
-  line=upper(fgetl(fid));
-  
-  if isstr(line) & length(line) >= 3;
-
-    if length(GPSECHO)~=0;
-      disp(line);
-    end;
-  
-    switch (line(1:3));
+while feof(fid) == 0
     
-     case 'ID:';
-      count = count + 1;
-      eph(count,1:30) = 0;
-      eph(count, 1) = str2num (line(28:length(line)));
-      if eph(count,1) > 100; eph(count,1) = floor(eph(count,1)/100); end;
-      eph(count,1) = eph(count,1) + addid;
-     case 'HEA';
-      eph(count,27) = str2num (line(28:length(line)));
-     case 'ECC';
-      eph(count,11) = str2num (line(28:length(line)));
-     case 'TIM'
-      eph(count,14) = str2num (line(28:length(line)));
-     case 'ORB'
-      eph(count,18) = str2num (line(28:length(line)));
-     case 'RAT'
-      eph(count,21) = str2num (line(28:length(line)));
-     case 'SQR'
-      eph(count,13) = str2num (line(28:length(line)));
-     case 'RIG'
-      eph(count,16) = str2num (line(28:length(line)));
-     case 'ARG'
-      eph(count,20) = str2num (line(28:length(line)));
-     case 'MEA'
-      eph(count, 9) = str2num (line(28:length(line)));
-     case 'WEE'
-      eph(count,24) = str2num (line(28:length(line)));
-      eph(count,24) = eph(count,24) + (ymaperiod-1)*1024; 
-     
-     otherwise;
-    end;
-  
-  end;
-  
-end;
+    line=upper(fgetl(fid));
+    
+    if ischar(line) & length(line) >= 3
+        
+        if ~isempty(GPSECHO)
+            disp(line);
+        end
+        
+        switch (line(1:3))
+            
+            case 'ID:'
+                count = count + 1;
+                eph(count,1:30) = 0;
+                eph(count, 1) = str2num (line(28:length(line)));
+                if eph(count,1) > 100, eph(count,1) = floor(eph(count,1)/100); end
+                eph(count,1) = eph(count,1) + addid;
+            case 'HEA'
+                eph(count,27) = str2num (line(28:length(line)));
+            case 'ECC'
+                eph(count,11) = str2num (line(28:length(line)));
+            case 'TIM'
+                eph(count,14) = str2num (line(28:length(line)));
+            case 'ORB'
+                eph(count,18) = str2num (line(28:length(line)));
+            case 'RAT'
+                eph(count,21) = str2num (line(28:length(line)));
+            case 'SQR'
+                eph(count,13) = str2num (line(28:length(line)));
+            case 'RIG'
+                eph(count,16) = str2num (line(28:length(line)));
+            case 'ARG'
+                eph(count,20) = str2num (line(28:length(line)));
+            case 'MEA'
+                eph(count, 9) = str2num (line(28:length(line)));
+            case 'Af0'
+                eph(count, 3) = str2num (line(28:length(line)));
+            case 'Af1'
+                eph(count, 4) = str2num (line(28:length(line)));
+            case 'WEE'
+                eph(count,24) = str2num (line(28:length(line)));
+                eph(count,24) = eph(count,24) + (ymaperiod-1)*1024;
+            otherwise;
+        end
+        
+    end
+    
+end
 
 % --------------------------------
 % --- Set GPSWEEK if necessary ---
 % --------------------------------
- 
-if length(GPSWEEK)==0
-  GPSWEEK=eph(1,24);
-end  
 
+% if length(GPSWEEK)==0
+%   GPSWEEK=eph(1,24);
+% end
+% 北斗时间转为GPS时间
+if addid==260
+    eph(:,14)=eph(:,14)+14;
+    eph(:,24)=eph(:,24)+1356;
+    %如果秒数超过一周，则调整周数
+    extrawk=eph(:,14)>=604800;
+    eph(extrawk,24)=eph(extrawk,24)+1;
+    eph(extrawk,14)=eph(extrawk,14)-604800;
+end
+% 在历书中，toa=toe
+eph(:,2)=eph(:,14);
 % --------------------------------------
 % --- Echo some results if necessary ---
 % --------------------------------------
 
-if length(GPSECHO)~=0;
-  disp(['Ready reading Navigation data from YUMA-dataset: ' file]);
-  disp ([num2str(count) ' ephemeris sets found']);
-end  
+if length(GPSECHO)~=0
+    disp(['Ready reading Navigation data from YUMA-dataset: ' file]);
+    disp ([num2str(count) ' ephemeris sets found']);
+end

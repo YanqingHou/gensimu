@@ -1,4 +1,4 @@
-function [tsat] = mktsat (startt,endt,interval);
+function [strweek,tsat] = mktsat (startt,endt,interval)
 %MKTSAT: Create an array of epochs for which positions are to be computed
 %
 % This routine creates an array of epochs for which satellite positions
@@ -33,12 +33,12 @@ function [tsat] = mktsat (startt,endt,interval);
 % --- Declare and check global variable GPSWEEK ---
 % -------------------------------------------------
 
-global GPSWEEK;
-
-if length(GPSWEEK) == 0
-  error ('GPSWEEK not set, exiting!');
-  return;
-end;
+% global GPSWEEK;
+% 
+% if length(GPSWEEK) == 0
+%   error ('GPSWEEK not set, exiting!');
+%   return;
+% end;
 
 % --------------------------------------------------
 % --- Convert UTC times/dates to gpsweek/seconds ---
@@ -60,25 +60,25 @@ end;
 % end;
 
 % --------------------------------------
-% --- Convert to the current GPSWEEK ---
+% --- Convert to the current strweek ---
 % --------------------------------------
 
-strsecs = strsecs + (strweek - GPSWEEK) * 7*24*3600;
-endsecs = endsecs + (endweek - GPSWEEK) * 7*24*3600;
+% strsecs = strsecs + (strweek - GPSWEEK) * 7*24*3600;
+endsecs = endsecs + (endweek - strweek) * 7*24*3600;
 
 % ----------------------------
 % --- Reasonable time-span ---
 % ----------------------------
 
-if strsecs > endsecs;
+if strsecs > endsecs
   disp ('Warning: End time is before start time, empty tsat returned');
   tsat = [];
   return;
-end;
+end
 
-if endsecs-strsecs > 2*24*3600;
+if endsecs-strsecs > 2*24*3600
   disp ('Warning: Time-span covers more than 2 days!');
-end;
+end
 
 % --------------------------
 % --- Create tsat-vector ---
@@ -90,9 +90,9 @@ tsat = strsecs:interval:endsecs;
 % --- Warning if result is very long ---
 % --------------------------------------
 
-if length (tsat) > 1000;
+if length (tsat) > 1000
   disp ('Warning: over 1000 epochs selected, might take a while ...');
-end;
+end
  
 % ------------------------------
 % --- End of function mktsat ---
