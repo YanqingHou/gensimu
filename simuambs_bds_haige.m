@@ -1,8 +1,8 @@
 % function simuambs
 clear;clc;
 option=struct('sys',[],'freqs',[],'stdcode',[],'stdphase',[],'Nsamp',[],'stdion',[],'tropo',[],'ldeg',[],'pdeg',[],'filename',[]);
-option.Nsamp=10;
-
+option.Nsamp=1E5;
+opts=option;
 freqindex=cell(9,1);
 freqindex{1,1}=[1 0 0; 0 0 0]'; freqindex{2,1}=[1 1 0; 0 0 0]'; freqindex{3,1}=[1 1 1; 0 0 0]';
 freqindex{4,1}=[0 0 0; 1 0 0]'; freqindex{5,1}=[0 0 0; 1 1 0]'; freqindex{6,1}=[0 0 0; 1 1 1]';
@@ -19,7 +19,7 @@ c2pscale=100;
 cnt=0;
 option.stdion=stdiind;
 option.tropo='Tfixed';
-for i=4
+for i=1:4
     option.ldeg=locs(i,1);%¾­¶È
     option.pdeg=locs(i,2);%Î³¶È
     option.freqs=freqindexs==1;
@@ -28,12 +28,14 @@ for i=4
     for stdpind=0.001:0.0005:0.005
         option.stdphase=stdpind;
         option.stdcode=stdpind*c2pscale;
-        cnt=cnt+1;
+        cnt=cnt+1
         option.filename=getfilename(option,'Haige');
         res=generate_Q_ahat(option);
-        save(strcat('./Haigesimudata/',option.filename),'res');
+        save(strcat('./Haigesimudata/',option.filename,'.mat'),'res');
+        opts(cnt)=option;
     end
     %                     end    %             end
 end
 % end
 cnt
+ save('./Haigesimudata/Haige_option.mat','opts');

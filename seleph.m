@@ -1,4 +1,4 @@
-function idx = sateph(prn,t,eph)
+function idx = seleph(prn,curweek,t,eph)
 %SELEPH  Select satellite ephemeris
 %        SELEPH selects the correct satellite ephemeris from eph and returns
 %        the row number idx.
@@ -32,21 +32,28 @@ function idx = sateph(prn,t,eph)
 % Declare global GPSWEEK
 %
 
-global GPSWEEK;
+% global GPSWEEK;
 
 %
 % Loop through all ephemeris sets and select most recent one 
 %
 
-[n,m] = size(eph);
-dtmin=inf;
-idx=-1;
-for count=1:n
-  if prn==eph(count, 1) 
-     dt=abs( t - eph(count,2) + 604800*(GPSWEEK-eph(count,24)));
-     if dt<dtmin
-        idx=count;
-        dtmin=dt;
-     end
-  end
+% [n,m] = size(eph);
+% dtmin=inf;
+% idx=-1;
+% for count=1:n
+%   if prn==eph(count, 1) 
+%      dt=abs( t - eph(count,2) + 604800*(curweek-eph(count,24)));
+%      if dt<dtmin
+%         idx=count;
+%         dtmin=dt;
+%      end
+%   end
+% end
+% 条件是：eph中只有prn卫星的星历。即eph第一列数值都一样
+if length(unique(eph(:, 1)))==1 && prn==eph(1, 1) 
+dt=abs( t - eph(:,2) + 604800*(curweek-eph(:,24)));
+[dtmin,idx]=min(dt);
+else
+    error('eph contains too much prns');
 end

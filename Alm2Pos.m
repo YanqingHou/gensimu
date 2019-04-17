@@ -1,4 +1,4 @@
-function [cursec,xsat,dts]=Alm2Pos(curweek,cursec,eph,sys,prn)
+function [cursec,xsat,dts]=Alm2Pos(curweek,cursec,eph,sys,prn,cordform)
 %暂时先不考虑使用伪距进行计算
 % global GPSWEEK;
 % omgedo = 7292115.1467e-11;     % angular velocity of Earth
@@ -101,7 +101,24 @@ end
 % tk = t - toc + 604800*(GPSWEEK-week);
 dts=af0+af1*tk;
 dts=dts-2*sqrt(gm*a)*ecc*sinE/c^2;
-xsat=rs;
+% xsat=rs;
+
+duration=cursec.sec+cursec.dec;
+Omega=-omge*duration;
+sinOmega=sin(Omega);cosOmega=cos(Omega);
+
+Tr=[cosOmega, sinOmega, 0;
+    -sinOmega, cosOmega, 0;
+    0,          0,        1];
+
+if strcmp(cordform,'ECEF')
+    Trx=eye(3);
+elseif strcmp(cordform,'Inertial')
+    Trx=Tr;
+else
+    error('unknown coordinate form');
+end
+xsat=Trx*rs';
 % 	// relativity correction
 % 	*dts=*dts-2.0*sqrt(mu*ptEph->dSqrtA)*ptEph->dE*sinE/CLIGHT/CLIGHT;
 %

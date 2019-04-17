@@ -75,16 +75,16 @@ endtime    = '7-jan-2019 23:59:59';     % last epoch for which to generate data
 % brdm0070.19p
 % navfile='/Users/YanqingHou/Documents/Work/datacenter/brdm0070.19p';
 
-[outputEphemeris ]= readRinexNav('brdm0070.19p');
-eph_gps=outputEphemeris.gpsEphemeris';
-eph_bds=outputEphemeris.beidouEphemeris';
+% [outputEphemeris ]= readRinexNav('brdm0070.19p');
+% eph_gps=outputEphemeris.gpsEphemeris';
+% eph_bds=outputEphemeris.beidouEphemeris';
 
-alm_gps        = rdyuma('gps007.ALM',0,2);  % GPS almanac (use almanac corresponding to the date considered)
-alm_bds       = rdyuma('tarc0070.19alc',260,1);  % bds almanac
-[~,indx]=sort(alm_bds(:,1));
-alm_bds=alm_bds(indx,:);
-% eph        = rdyuma('yumaGPS20120319.txt',0,2);  % GPS almanac (use almanac corresponding to the date considered)
-% eph2       = rdyuma('yumaGAL20120319.txt',260,2);  % bds almanac
+% alm_gps        = rdyuma('gps007.ALM',0,2);  % GPS almanac (use almanac corresponding to the date considered)
+% alm_bds       = rdyuma('tarc0070.19alc',260,1);  % bds almanac
+% [~,indx]=sort(alm_bds(:,1));
+% alm_bds=alm_bds(indx,:);
+% % % eph        = rdyuma('yumaGPS20120319.txt',0,2);  % GPS almanac (use almanac corresponding to the date considered)
+% % % eph2       = rdyuma('yumaGAL20120319.txt',260,2);  % bds almanac
 int        = 1800;                     % interval [sec] for which model will be generated
 
 no_epochs     = 1;                    % number of epochs used in resolving float solution
@@ -98,22 +98,23 @@ plh           = [prad lrad 0];  % vector [latitudes longitudes heights]
 xyz           = plh2xyzwgs(plh);
 
 [curweek,tsat]= mktsat ( starttime,endtime,int);
-
-% [xs,ys,zs]    = cpaziele (curweek,tsat,alm_gps,xyz,'GPS','alm');
-% [xs2,ys2,zs2] = cpaziele (curweek,tsat,alm_bds,xyz,'BDS','alm');
-
-[rsx,rsy,rsz]    = cpaziele (curweek,tsat,eph_gps,xyz,'GPS','eph');
-[rsx2,rsy2,rsz2] = cpaziele (curweek,tsat,eph_bds,xyz,'BDS','eph');
-
+% 计算速度太慢，算完一次之后，保存数据，之后直接使用了。
+% [xs,ys,zs,prns]    = cpaziele (curweek,tsat,alm_gps,xyz,'GPS','alm');
+% [xs2,ys2,zs2,prns2] = cpaziele (curweek,tsat,alm_bds,xyz,'BDS','alm');
+% 
+% [rsx,rsy,rsz,prnsx]    = cpaziele (curweek,tsat,eph_gps,xyz,'GPS','eph');
+% [rsx2,rsy2,rsz2,prnsx2] = cpaziele (curweek,tsat,eph_bds,xyz,'BDS','eph');
+% save('satpos.mat','xs','ys','zs','prns','xs2','ys2','zs2','prns2','rsx','rsy','rsz','prnsx','rsx2','rsy2','rsz2','prnsx2');
+load('satpos.mat');
 % 
 lt = size(tsat,2);
 time = 1:lt;  
 
-res = struct('Qa',[],'ahat',[],'Ps',[],'Qb',[],'Qab',[]);
+res = struct('Qa',[],'ahat',[],'Ps',[],'Qb',[],'Qab',[],'DOPs',[]);
 if freqno1==0
     for k=time
     [Qa,Ps,Qb,Qab] = SingleQgg(freq2,sigcode,sigphase,sdion,tropo,no_epochs,cutoff,xs2(:,k),ys2(:,k),zs2(:,k),xyz,plh,cfix);  
-    res(k).Qa = Qa; % float ambiguity variance matrix for Galileo 
+    res(k).Qa = Qa; % float ambiguity variance matrix for BDS
     res(k).Qb = Qb;
     res(k).Qab = Qab;
     res(k).Ps= Ps;      
@@ -123,24 +124,27 @@ if freqno1==0
     end
 elseif freqno2==0
     for k=time
-    [Qa,Ps,Qb,Qab] = SingleQgg(freq1,sigcode,sigphase,sdion,tropo,no_epochs,cutoff,xs(:,k),ys(:,k),zs(:,k),xyz,plh,cfix);
-    res(k).Qa = Qa; % float ambiguity variance matrix for Galileo 
+    [Qa,Ps,Qb,Qab,DOPs] = SingleQgg(freq1,sigcode,sigphase,sdion,tropo,no_epochs,cutoff,xs(:,k),ys(:,k),zs(:,k),xyz,plh,cfix);
+    res(k).Qa = Qa; % float ambiguity variance matrix for GPS
     res(k).Qb = Qb;
     res(k).Qab = Qab;
-    res(k).Ps= Ps;      
+    res(k).Ps= Ps;   
+    res(k).DOPs=DOPs;
 %         if Nsamp > 0
 %             res(k).ahat  = mvnrnd(zeros(1,size(Qa,1)),Qa,Nsamp)'; 
 %         end
     end
 else
     for k=time
-        [Qa,Ps,Qb,Qab]  = DualQgg(freq1,freq2,...
+        [Qa,Ps,Qb,Qab,DOPs]  = DualQgg(freq1,freq2,...
         sigcode,sigphase,sdion,tropo,no_epochs,cutoff,...
         xs(:,k),ys(:,k),zs(:,k),xs2(:,k),ys2(:,k),zs2(:,k),xyz,plh,cfix);        
         res(k).Qa = Qa; % float ambiguity variance matrix for Galileo 
         res(k).Qb = Qb;
         res(k).Qab = Qab;
-        res(k).Ps= Ps;      
+        res(k).Ps= Ps;   
+        res(k).DOPs=DOPs;
+
 %             if Nsamp > 0
 %                 res(k).ahat  = mvnrnd(zeros(1,size(Qa,1)),Qa,Nsamp)'; 
 %             end

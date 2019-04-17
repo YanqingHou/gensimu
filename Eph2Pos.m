@@ -1,4 +1,4 @@
-function [cursec,xsat,dts]=Eph2Pos(curweek,cursec,eph,sys,prn)
+function [cursec,xsat,dts]=Eph2Pos(curweek,cursec,eph,sys,prn,cordform)
 %暂时先不考虑使用伪距进行计算
 % global GPSWEEK;
 % omgedo = 7292115.1467e-11;     % angular velocity of Earth
@@ -98,14 +98,23 @@ end
 dts=af0+af1*tk+af2*tk^2;
 dts=dts-2*sqrt(gm*a)*ecc*sinE/c^2;
 % xsat=rs;
-
-Omega=-omge*tk;
+% 以curweek周0时0分0秒为时间基准，建立惯性直角坐标系。
+duration=cursec.sec+cursec.dec;
+Omega=-omge*duration;
 sinOmega=sin(Omega);cosOmega=cos(Omega);
+
 Tr=[cosOmega, sinOmega, 0;
     -sinOmega, cosOmega, 0;
     0,          0,        1];
 
-xsat=Tr*rs';
+if strcmp(cordform,'ECEF')
+    Trx=eye(3);
+elseif strcmp(cordform,'Inertial')
+    Trx=Tr;
+else
+    error('unknown coordinate form');
+end
+xsat=Trx*rs';
 
 % 	// relativity correction
 % 	*dts=*dts-2.0*sqrt(mu*ptEph->dSqrtA)*ptEph->dE*sinE/CLIGHT/CLIGHT;

@@ -95,6 +95,8 @@ function [xsat]=satposef(prn,curweek,t,eph,sys,mode)
 %
 % Compute all requested satellite positions, velocities and accelerations
 %
+% cordform='Inertial';
+cordform='ECEF';
 
 lprn = length(prn);
 ltim = length(t);
@@ -112,15 +114,15 @@ for count=1:l
     
     time     = t(itim);
     
-    idx      = seleph(prn(iprn),time,eph);
+    idx      = seleph(prn(iprn),curweek,time,eph);
     if idx==-1, disp('No ephemeris data found');break, end
     cursec=struct('sec',0,'dec',0);
     cursec.sec=time;
     ephi=eph(idx,:);
     if strcmp(mode,'alm')
-        [~,rsat,~]=Alm2Pos(curweek,cursec,ephi,sys,prn(iprn));
+        [~,rsat,~]=Alm2Pos(curweek,cursec,ephi,sys,prn(iprn),cordform);
     elseif strcmp(mode,'eph')
-        [~,rsat,~]=Eph2Pos(curweek,cursec,ephi,sys,prn(iprn));
+        [~,rsat,~]=Eph2Pos(curweek,cursec,ephi,sys,prn(iprn),cordform);
     else
         error('unkonwn mode!');
     end
