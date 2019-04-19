@@ -19,18 +19,22 @@ c2pscale=100;
 cnt=0;
 option.stdion=stdiind;
 option.tropo='Tfixed';
+stdpinds=0.001:0.0005:0.005;
+
+combcnts=zeros(4,9);
 for i=1:4
     option.ldeg=locs(i,1);%¾­¶È
     option.pdeg=locs(i,2);%Î³¶È
     option.freqs=freqindexs==1;
     %             for stdcind=0.15:0.05:0.40
     %             option.stdcode=stdcind;
-    for stdpind=0.001:0.0005:0.005
+    for j=1:length(stdpinds)
+        stdpind=stdpinds(j);
         option.stdphase=stdpind;
         option.stdcode=stdpind*c2pscale;
         cnt=cnt+1
         option.filename=getfilename(option,'Haige');
-        res=generate_Q_ahat(option);
+        [res,combcnts(i,j)]=generate_Q_ahat(option);
         save(strcat('./Haigesimudata/',option.filename,'.mat'),'res');
         opts(cnt)=option;
     end

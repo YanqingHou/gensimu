@@ -1,4 +1,4 @@
-function [Qa1,Ps1,Qb1,Qab1,DOPs] = SingleQgg(freq,...
+function [Qa1,DOPs] = SingleQgg(freq,...
     sigcode,sigphase,sdion,tropo,no_epochs,cutoff,xs,ys,zs,xyz,plh,cfix)
 
 
@@ -134,7 +134,7 @@ Qa1 = (1/no_epochs)*inv(ins1); % eq.(58)
 Qa1   =(tril(Qa1,0)+tril(Qa1,-1)');
 
 
-Ps1 = cpsucrate(Qa1,'LS');
+% Ps1 = cpsucrate(Qa1,'LS');
 ADOP=det(Qa1);
 ADOP=ADOP^(1/m);
 DOPs=[TDOP,PDOP,GDOP,ADOP];
@@ -145,14 +145,14 @@ DOPs=[TDOP,PDOP,GDOP,ADOP];
 % 
 
     
-if strcmp(scenario,'rr')
-    Ik  = eye(no_epochs);
-    ek  = ones(no_epochs,1);
-    
-    Qab1 = -Qa1 * kron(ek', MQN'/MQM );      % eq.(3.24)
-    MQMk = kron(Ik,MQM);
-    Qb1  = inv(MQMk) - MQMk \ kron(ek, MQN) * Qab1; %eq.(3.25) 
-else    
-    Qab1 = -Qa1 * MQN'/MQM ;        % eq.(60)
-    Qb1  = inv(MQM) - MQM\MQN * Qab1;  % eq.(61)  
-end
+% if strcmp(scenario,'rr')
+%     Ik  = eye(no_epochs);
+%     ek  = ones(no_epochs,1);
+%     
+%     Qab1 = -Qa1 * kron(ek', MQN'/MQM );      % eq.(3.24)
+%     MQMk = kron(Ik,MQM);
+%     Qb1  = inv(MQMk) - MQMk \ kron(ek, MQN) * Qab1; %eq.(3.25) 
+% else    
+%     Qab1 = -Qa1 * MQN'/MQM ;        % eq.(60)
+%     Qb1  = inv(MQM) - MQM\MQN * Qab1;  % eq.(61)  
+% end
